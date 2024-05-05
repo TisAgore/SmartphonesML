@@ -1,18 +1,27 @@
 import pandas as pd
 import numpy as np
 import math
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, r2_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
-%pip install selenium
-%pip install undetected-chromedriver
-!pip install selenium
-!apt-get update 
-!apt install chromium-chromedriver
+# %pip install selenium
+# %pip install undetected-chromedriver
+# !pip install selenium
+# !apt-get update
+# !apt install chromium-chromedriver
+# import json
+# import re
+# import time
 
+# import undetected_chromedriver as uc
+# from bs4 import BeautifulSoup
+# from openpyxl import Workbook
+# from selenium.common import NoSuchWindowException
+# from selenium import webdriver
 RANDOM_SEED = 400220401
 
 smartphones = pd.read_csv('smartphones - smartphones.csv')
@@ -89,6 +98,8 @@ def clear_os(os_str_value):
       # print(3)
       smartphones = smartphones.drop(false_id)
 
+array_append = lambda arr, x: arr.append(x)
+
 
 columns_names = np.array(smartphones.columns)
 columns_names[0], columns_names[1] = columns_names[1], columns_names[0]
@@ -138,16 +149,8 @@ smartphones.loc[(smartphones.processor.str.count('ghz') == 0) == True, 'processo
 # df[(df['some_column_name'].isin(['some_value_1', 'some_value_2']) == False)]
 smartphones.loc[smartphones.ram == 'ram', 'ram'] = '12 gb ram, 256 gb inbuilt'
 # print(smartphones['display'].unique())
-# print(smartphones[smartphones.display.str.count('hz') == 0])
-smartphones.loc[smartphones['rating'].isin([np.nan]) == True, 'rating'] = int(smartphones[smartphones['rating'].isin([np.nan]) == False]['rating'].mean())
+smartphones.loc[smartphones['rating'].isin([np.nan]) == True, 'rating'] = int(smartphones[smartphones['rating'].isin([np.nan]) == False]['rating'].mean()) - 6
 ## print(smartphones[smartphones.display.str.count('inch') == 0])
-## new_displays = ['6.7 inches, 2640 x 1080 px, 120 hz display with foldable dual', '7.8 inches, 1920 x 1440 px, 60 hz display with foldable dual',
-    ##           '7.1 inches, 1792 x 1920 px, 120 hz display with foldable dual', '6.8 inches, 2520 x 1080 px, 120 hz display with foldable dual',
-   ##            '6.7 inches, 2640 x 1080 px, 120 hz display with foldable dual', '7.6 inches, 2208 x 1768 px, 120 hz display with foldable dual',
-    ##           '6.8 inches, 2460 x 1080 px display with dual', '6.78 inches, 2460 x 1080 px, 120 hz display with dual',
-    ##           '7.4 inches, 2400 x 1080 px display with dual', '7.8 inches, 2480 x 2200, 120 hz display with foldable',
-     ##          '7.2 inches, 1920 x 1440 px, 60 hz display with foldable dual']
-## smartphones.loc[smartphones.display.str.count('inch') == 0, 'display'] = new_displays
 ## smartphones['display'] = smartphones.display.str.replace('\u2009', ' ')
 # print(smartphones[smartphones.os == 'os'])
 smartphones.loc[(smartphones.card == 'card') | (smartphones.card == 'memory card supported'), 'card'] = 'memory card supported, upto 256 gb'
@@ -156,19 +159,46 @@ smartphones['ram'] = smartphones.ram.str.replace('\u2009', ' ')
 smartphones['ram'] = smartphones.ram.str.replace(' ram', '')
 smartphones['ram'] = smartphones.ram.str.replace(' inbuilt', '')
 smartphones['ram'] = smartphones.ram.str.replace(' tb', '024 gb')
+smartphones['ram'] = smartphones.ram.str.replace('512 mb', '1 gb')
 smartphones['ram'] = smartphones.ram.str.replace(' gb', '')
 smartphones['battery'] = smartphones.battery.str.replace('\u2009', ' ')
 smartphones['battery'] = smartphones.battery.str.replace(' battery', '')
+smartphones['battery'] = smartphones.battery.str.replace(' mah', ', ')
+smartphones['battery'] = smartphones.battery.str.replace(' with', '')
+# print(smartphones['battery'].unique())
 smartphones['battery'] = smartphones.battery.str.replace(' fast charging', '')
 smartphones['card'] = smartphones.card.str.replace('\u2009', ' ')
 smartphones['sim'] = smartphones.sim.str.replace('\u2009', ' ')
 smartphones['processor'] = smartphones.processor.str.replace('\u2009', ' ')
 smartphones['processor'] = smartphones.processor.str.replace(' processor', '')
 smartphones['processor'] = smartphones.processor.str.replace(' ghz', '')
+smartphones['processor'] = smartphones.processor.str.replace(' core', '')
 smartphones['processor'] = smartphones.processor.str.split(', ').str[-2::]
+# smartphones['display'] = smartphones.display.str.replace('display, ', '')
+new_displays = ['7.1 inches, 1792 x 1920 px, 120 hz display with foldable dual', '8.0 inches, 2200 x 2480 px, 120 hz display with foldable',
+                '2.7 inches, 240 x 320 px, 60 hz display with dual', '7.1 inches, 1792 x 1920 px, 120 hz display with foldable dual',
+                '8.0 inches, 1080 x 2520 px, 120 hz display with foldable dual', '2.8 inches, 240 x 320 px, 60 hz with dual',
+                '6.7 inches, 1080 x 2640 px, 120 hz display with foldable dual', '7.6 inches, 1812 x 2176 px, 120 hz display with foldable dual',
+                '7.8 inches, 1440 x 1920 px, 60 hz display with foldable dual', '7.1 inches, 1792 x 1920 px, 120 hz display with foldable dual',
+                '6.8 inches, 1080 x 2520 px, 120 hz display with foldable dual', '8.0 inches, 1916 x 2160, 120 hz display with foldable dual',
+                '6.7 inches, 1080 x 2640 px, 120 hz display with foldable dual', '7.6 inches, 1768 x 2208 px, 120 hz display with foldable dual',
+                '6.8 inches, 1080 x 2460 px display with dual', '6.8 inches, 1080 x 2460 px, 120 hz display with dual',
+                '6.8 inches, 1080 x 2460 px display with dual', '7.1 inches, 1792 x 1920 px, 120 hz display with foldable dual',
+                '7.4 inches, 1812 x 2176 px display with dual', '6.8 inches, 1080 x 2448 px, 165 hz display with dual',
+                '6.5 inches, 2480 x 2200 px, 120 hz display with foldable', '8.0 inches, 1860 x 2480 px, 60 hz display with foldable dual',
+                '2.8 inches, 480 x 640 px, 60 hz display with dual', '7.2 inches, 1920 x 1440 px, 60 hz display with foldable dual',
+                '7.6 inches, 1812 x 2176 px, 120 hz display with foldable dual', '8.0 inches, 2200 x 2480 px, 120 hz display with foldable',
+                '8.0 inches, 2200 x 2480 px, 60 hz display with foldable', '8.0 inches, 1916 x 2160 px, 120 hz display with foldable']
+# print(smartphones.loc[smartphones.display.str.count('inch') == 0])
+smartphones.loc[smartphones.display.str.count('inch') == 0, 'display'] = new_displays
 smartphones['display'] = smartphones.display.str.replace('\u2009', ' ')
 smartphones['display'] = smartphones.display.str.replace('x display', 'x, 60 hz display')
 smartphones['camera'] = smartphones.camera.str.replace('\u2009', ' ')
+smartphones['camera'] = smartphones.camera.str.replace(' &', '')
+smartphones['camera'] = smartphones.camera.str.replace(' camera', '')
+smartphones['camera'] = smartphones.camera.str.replace(' front', '')
+smartphones['camera'] = smartphones.camera.str.replace(' main', '')
+smartphones['camera'] = smartphones.camera.str.split(' rear')
 # print(smartphones['card'].unique())
 smartphones['card'] = smartphones.card.str.replace(' tb', '024 gb')
 smartphones['card'] = smartphones.card.str.split(', upto')
@@ -177,103 +207,191 @@ smartphones.loc[smartphones.card.str.len() == 1.0, 'card'].apply(array_append, a
 # print(smartphones['card'].str[1].str.replace(' gb', ''))
 smartphones.insert(len(smartphones.columns) - 1, 'card_value (gb)', smartphones['card'].str[1].str.replace(' gb', '').astype('int'))
 del smartphones['card']
-smartphones['battery'] = smartphones.battery.str.split(' with')
+smartphones['battery'] = smartphones.battery.str.split(', ')
+smartphones.insert(len(smartphones.columns) - 4, 'fast charging (w)', smartphones['battery'].str[1].str.replace('w', ''))
+smartphones.loc[smartphones['fast charging (w)'] == '', 'fast charging (w)'] = '0'
+smartphones['fast charging (w)'] = smartphones['fast charging (w)'].astype('float')
+smartphones['battery'] = smartphones.battery.str[0].astype('int')
 smartphones['display'] = smartphones.display.str.replace(' with', ',')
 smartphones['display'] = smartphones.display.str.replace(' display', '')
-smartphones['display'] = smartphones.display.str.split(' ,')
-smartphones
+smartphones['display'] = smartphones.display.str.split(', ')
+# smartphones.insert(len(smartphones.columns) - 3, 'additional display parametrs', smartphones['display'].str[3])
+smartphones.insert(len(smartphones.columns) - 3, 'display frequancy (hz)', smartphones['display'].str[2].str.replace(' hz', '').astype('int'))
+smartphones.insert(len(smartphones.columns) - 4, 'display heigth (px)', smartphones['display'].str[1].str.replace(' px', ''))
+smartphones['display heigth (px)'] = smartphones['display heigth (px)'].str.split(' x ')
+smartphones.insert(len(smartphones.columns) - 4, 'display width (px)', smartphones['display heigth (px)'].str[0].astype('int'))
+smartphones['display heigth (px)'] = smartphones['display heigth (px)'].str[1].astype('int')
+smartphones.insert(len(smartphones.columns) - 6, 'display size (inch)', smartphones['display'].str[0].str.replace(' inches', '').astype('float'))
+del smartphones['display']
+# smartphones['sim'] = smartphones.display.str.replace(' sim', '')
+# print(smartphones['sim'].unique())
+smartphones['sim'] = smartphones.sim.str.split(', ')
+unique_sim_qualities = []
+# print(smartphones['sim'].unique())
+for index in smartphones.index:
+  qualities = smartphones.sim.loc[index]
+  # print(smartphones.sim.loc[index])
+  for quality in qualities:
+    if quality not in unique_sim_qualities:
+      unique_sim_qualities.append(quality)
+# smartphones['sim'] = smartphones.sim.str.join(', ')
+# print(smartphones['sim'])
+# for sim_quality in
+qualities_all = []
+for index in smartphones.index:
+  qualities = list(smartphones.sim.loc[index])
+  new_qualities = []
+  for unique_quality in unique_sim_qualities:
+      if unique_quality in qualities:
+        new_qualities.append(1)
+      else:
+        new_qualities.append(0)
+  qualities_all.append(new_qualities)
+  # print(smartphones.loc[index, 'sim'])
+  # print(qualities)
+smartphones['sim'] = qualities_all
+column_id = 3
+for unique_quality in unique_sim_qualities:
+  smartphones.insert(column_id, unique_quality, smartphones['sim'].str[column_id - 3])
+  column_id += 1
+del smartphones['sim']
+# smartphones['sim'] = smartphones.sim.str.split(', ')
+smartphones.insert(len(smartphones.columns) - 11, 'cores num', smartphones['processor'].str[0])
+smartphones['processor'] = smartphones['processor'].str[1].astype('float')
+cores_num = {'octa': '8', 'hexa': '6', 'quad': '4', 'dual': '2'}
+for core in cores_num:
+  smartphones['cores num'] = smartphones['cores num'].str.replace(core, cores_num[core])
+smartphones['cores num'] = smartphones['cores num'].astype('int')
+# print(smartphones[smartphones['ram'].isin(['4, 512 mb'])])
+smartphones['ram'] = smartphones.ram.str.split(', ')
+smartphones.insert(len(smartphones.columns) - 10, 'inbuilt memory', smartphones['ram'].str[1].astype('int'))
+smartphones['ram'] = smartphones['ram'].str[0].astype('int')
+# smartphones.insert(len(smartphones.columns) - 2, '')
+smartphones.insert(len(smartphones.columns) - 3, 'rear camera (max mp)', smartphones['camera'].str[0])
+smartphones.insert(len(smartphones.columns) - 3, 'front camera (max mp)', smartphones['camera'].str[1])
+del smartphones['camera']
+smartphones.loc[smartphones['front camera (max mp)'] == '', 'front camera (max mp)'] = '0 mp'
+cameras_num = {'triple': '3', 'dual': '2', 'mp': '1', 'quad': '4', 'penta': '5'}
+smartphones['rear camera (max mp)'] = smartphones['rear camera (max mp)'].str.split()
+smartphones.insert(len(smartphones.columns) - 4, 'rear num', smartphones['rear camera (max mp)'].str[-1])
+smartphones['front camera (max mp)'] = smartphones['front camera (max mp)'].str.split()
+smartphones.insert(len(smartphones.columns) - 3, 'front num', smartphones['front camera (max mp)'].str[-1])
+for cam_num in cameras_num:
+  smartphones['rear num'] = smartphones['rear num'].str.replace(cam_num, cameras_num[cam_num])
+  smartphones['front num'] = smartphones['front num'].str.replace(cam_num, cameras_num[cam_num])
+smartphones['rear num'] = smartphones['rear num'].astype('int')
+smartphones['front num'] = smartphones['front num'].astype('int')
+smartphones['rear camera (max mp)'] = smartphones['rear camera (max mp)'].str[0].astype('float')
+smartphones['front camera (max mp)'] = smartphones['front camera (max mp)'].str[0].astype('float')
+# print(smartphones['rear camera'].unique())
+le = LabelEncoder()
+os_as_str = smartphones['os'].unique()
+smartphones['os'] = le.fit_transform(smartphones['os'])
+os_as_num = smartphones['os'].unique()
 
-import json
-import re
-import time
+# user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 
-import undetected_chromedriver as uc
-from bs4 import BeautifulSoup
-from openpyxl import Workbook
-from selenium.common import NoSuchWindowException
-from selenium import webdriver
+# # def load_cookies():
+# #     with open("cookie.json", encoding="utf-8", errors="ignore") as config_file:
+# #         cookies = json.load(config_file)
+# #     return [[cookie["name"], cookie["value"]] for cookie in cookies]
 
-# from config import catalog, pages, headless, minimum_percentage, max_price, min_price, max_price_with_discounted, \
-#     cookie_file
+# def parse(model_name, driver):
+#     global smartphones
+#     url = f"https://megamarket.ru/catalog/?q={model_name.replace(' ', '+')}&collectionId=12546"
+#     print(model_name)
+#     new_model_name = model_name.replace('(','')
+#     new_model_name = new_model_name.replace(')','')
+#     new_model_name = new_model_name.replace(' 5g','')
+#     new_model_name = new_model_name.replace(' ram','')
+#     new_model_name = new_model_name.replace('gb','')
+#     new_model_name = new_model_name.replace(' + ','/')
+#     new_model_name = new_model_name.replace(' plus','')
+#     words_in_model = new_model_name.split(' ')
+#     print(words_in_model)
+#     driver.get(url)
+#     html = BeautifulSoup(driver.page_source, "html.parser")
+#     catalog_items = html.find("div", class_ = "catalog-items-list")
+#     # print(catalog_items)
 
-user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+#     if catalog_items is None:
+#         print(f"Нет каталога | Рекурсия на странице {url}")
+#         smartphones = smartphones.drop(smartphones[smartphones['model'].isin([model_name])].index)
+#         return False
+#         # return parse(model_name, driver)
 
-# def load_cookies():
-#     with open("cookie.json", encoding="utf-8", errors="ignore") as config_file:
-#         cookies = json.load(config_file)
-#     return [[cookie["name"], cookie["value"]] for cookie in cookies]
+#     # items = catalog_items.find_all("div", class_ = "catalog-item-regular-desktop ddl_product catalog-item-desktop")
+#     items = catalog_items.find_all("div", class_ = "catalog-item-mobile ddl_product")
+#     # print(items)
+#     if len(items) == 0:
+#         print(f"0 Предметов | Рекурсия на странице {url}")
+#         smartphones = smartphones.drop(smartphones[smartphones['model'].isin([model_name])].index)
+#         return False
+#         # return parse(model_name, driver)
 
-def parse(model_name, driver):
-    url = f"https://megamarket.ru/catalog/?q={model_name.replace(' ', '+')}&collectionId=12546"
-    driver.get(url)
-    html = BeautifulSoup(driver.page_source, "html.parser")
-    catalog_items = html.find("div", class_ = "catalog-items-list")
-    # print(catalog_items)
+#     for item in items:
+#       count_model = 0
+#       # print(item.find("a", class_="ddl_product_link"))
+#       item_title = item.find("div", class_="item-title").a.get('title').strip()[9:].lower()
+#       # print(item.find("div", class_="item-title"))
+#       # item_url = "https://megamarket.ru" + item.find("a", class_="ddl_product_link").get("href").strip()
+#       for model_word in words_in_model:
+#         if model_word in item_title:
+#           count_model += 1
+#       print(count_model, len(words_in_model))
+#       if count_model == len(words_in_model):
+#         return True
+#       print(item_title)
 
-    if catalog_items is None:
-        print(f"Нет каталога | Рекурсия на странице {url}")
-        # return parse(model_name, driver)
-
-    # items = catalog_items.find_all("div", class_ = "catalog-item-regular-desktop ddl_product catalog-item-desktop")
-    items = catalog_items.find_all("div", class_ = "catalog-item-mobile ddl_product")
-    # print(items)
-    if len(items) == 0:
-        print(f"0 Предметов | Рекурсия на странице {url}")
-        # return parse(model_name, driver)
-
-    for item in items:
-        item_title = item.find("div", class_="item-title").get("title").strip()
-        print(item_title, item.find("div", class_="item-title").get("title"))
-        item_url = "https://megamarket.ru" + item.find("a", class_="ddl_product_link").get("href").strip()
-        print(item_title)
-
-    return True
+#     smartphones = smartphones.drop(smartphones[smartphones['model'].isin([model_name])].index)
+#     return False
 
 
-def main():
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument(f"--user-agent={user_agent}")
-    chrome_options.add_argument('--disable-notifications')
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    # options.binary_location = "\Application\chrome.exe"
-    # print(options.binary_location)
-    driver = webdriver.Chrome(options=chrome_options)
-    # driver.get("https://megamarket.ru/")
-    # cookies = load_cookies()
-    # print("Подгрузка куки файлов")
-    # for name, value in cookies:
-    #     driver.add_cookie({"name": name, "value": value})
-    # print("Куки подгружены")
-    driver.get("https://megamarket.ru/")
-    print("Start")
+# def main():
+#     chrome_options = webdriver.ChromeOptions()
+#     chrome_options.add_argument(f"--user-agent={user_agent}")
+#     chrome_options.add_argument('--disable-notifications')
+#     chrome_options.add_argument('--headless')
+#     chrome_options.add_argument('--no-sandbox')
+#     chrome_options.add_argument('--disable-dev-shm-usage')
+#     # options.binary_location = "\Application\chrome.exe"
+#     # print(options.binary_location)
+#     driver = webdriver.Chrome(options=chrome_options)
+#     # driver.get("https://megamarket.ru/")
+#     # cookies = load_cookies()
+#     # print("Подгрузка куки файлов")
+#     # for name, value in cookies:
+#     #     driver.add_cookie({"name": name, "value": value})
+#     # print("Куки подгружены")
+#     driver.get("https://megamarket.ru/")
+#     print("Start")
 
-    try:
-        # current_page = 1
-        for model_name in smartphones['model']:
-        # while current_page != pages + 1:
-          result = parse(model_name, driver)
-            # if result:
-            #     print(f"{time.strftime('%H:%M:%S %d/%m/%Y')} | {current_page} / {pages}")
-            # else:
-            #     break
-            # current_page += 1
+#     try:
+#         # current_page = 1
+#         for model_name in smartphones['model']:
+#         # while current_page != pages + 1:
+#           print(model_name)
+#           result = parse(model_name, driver)
+#             # if result:
+#             #     print(f"{time.strftime('%H:%M:%S %d/%m/%Y')} | {current_page} / {pages}")
+#             # else:
+#             #     break
+#             # current_page += 1
 
-        print("Все товары просмотрены")
+#         print("Все товары просмотрены")
 
-    except Exception as e:
-        print(e)
-    finally:
-        try:
-            driver.close()
-            driver.quit()
-        except NoSuchWindowException:
-            driver.quit()
+#     except Exception as e:
+#         print(e)
+#     finally:
+#         try:
+#             driver.close()
+#             driver.quit()
+#         except NoSuchWindowException:
+#             driver.quit()
 
-    print("Finish")
+#     print("Finish")
 
-main()
+# main()
 
 def shuffle_dataset(dataset: pd.DataFrame) -> np.ndarray:
     """Функция для чтения данных с диска, а также их случайного перемешивания
@@ -311,7 +429,7 @@ def prepare_dataset_for_regression(
         y_train, y_test -- массивы с ценами размером [n elements]
     """
     target = dataset.loc[:, label_col_name]
-    features = dataset.iloc[:, 2]
+    features = dataset.iloc[:, 2:]
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=test_size, random_state=RANDOM_SEED)
     return X_train, X_test, y_train, y_test
 
@@ -322,8 +440,16 @@ def print_regression_report(y_test, y_pred):
     r2 = r2_score(y_test, y_pred)
     print(f"MSE: {mse:.2f}", f"R2-score: {r2:.2f}", sep="\n")
 
-model_v1 = LinearRegression(n_jobs=-1)
-model_v1.fit(X_train, y_train)
-y_pred_v1 = model_v1.predict(X_test)
+phones_model_v1 = GradientBoostingRegressor(loss='squared_error', random_state=RANDOM_SEED)
+phones_model_v1.fit(X_train, y_train)
+y_pred_v1 = phones_model_v1.predict(X_test)
+
+print_regression_report(y_test, y_pred_v1)
+
+feature_names = smartphones.columns[2:]
+coefs = phones_model_v1.feature_importances_
+
+for name, cf in sorted(zip(feature_names, coefs), key=lambda x: x[1], reverse=True):
+    print(f"{name}\t{cf}")
 
 print_regression_report(y_test, y_pred_v1)
