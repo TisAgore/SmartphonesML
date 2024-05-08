@@ -51,7 +51,7 @@ def data_from_telebot(characteristics):
         cores_num = 8
     if -1 in borders:
         borders.remove(-1)
-        high_border = smartphones['price'].max()
+        high_border = smartphones_data['price'].max()
         borders.append(high_border)
     low_border = min(borders)
     high_border = max(borders)
@@ -71,10 +71,10 @@ def data_from_telebot(characteristics):
     smartphones_by_brands = pd.DataFrame(columns=smartphones.columns)
     if len(brands) != 0:
         for brand_name in brands:
-          if smartphones_by_brands.empty:
-              smartphones_by_brands = smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]
-          else:
-              smartphones_by_brands = pd.concat([smartphones_by_brands, smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]])
+            if smartphones_by_brands.empty:
+                smartphones_by_brands = smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]
+            else:
+                smartphones_by_brands = pd.concat([smartphones_by_brands, smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]])
     else:
         smartphones_by_brands = smartphones_for_search
     smartphones_for_search = smartphones_by_brands.sort_values(by=sort_by)
@@ -82,7 +82,6 @@ def data_from_telebot(characteristics):
     for model in np.array(smartphones_for_search['model']):
         if model not in models_in_megamarket:
             smartphones_for_search = smartphones_for_search.drop(smartphones_for_search[smartphones_for_search.model.isin([model])].index)
-    print(smartphones_for_search)
     return np.array(smartphones_for_search.iloc[:3, 1])
 
 def say_hello(message):
@@ -224,6 +223,7 @@ def characteristics_choice(callback):
         characteristic.append(callback.data)
     elif callback.data == 'result':
         phone_models = data_from_telebot(characteristic)
+        characteristic = []
         str_for_message = 'Вот ваш результат:\n'
         for phone_model in phone_models:
             str_for_message = str_for_message + f'{phone_model.upper()}\n'
