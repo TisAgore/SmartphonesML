@@ -223,7 +223,7 @@ def characteristics_choice(callback):
         characteristic.append(callback.data)
     elif callback.data == 'result':
         phone_models = data_from_telebot(characteristic)
-        characteristic = []
+        characteristic.clear()
         str_for_message = 'Вот ваш результат:\n'
         for phone_model in phone_models:
             str_for_message = str_for_message + f'{phone_model.upper()}\n'
