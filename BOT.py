@@ -49,13 +49,14 @@ def data_from_telebot(characteristics):
             sort_by.append(characteristic)
     if cores_num == 0:
         cores_num = 8
-    if -1 in borders:
-        borders.remove(-1)
-        high_border = smartphones_data['price'].max()
-        borders.append(high_border)
-    low_border = min(borders)
-    high_border = max(borders)
-    smartphones_for_search = smartphones_data[(smartphones_data.price >= low_border*1000) & (smartphones_data.price <= high_border*1000)]
+    if len(borders) != 0:
+        if -1 in borders:
+            borders.remove(-1)
+            high_border = smartphones_data['price'].max()
+            borders.append(high_border)
+        low_border = min(borders)
+        high_border = max(borders)
+        smartphones_for_search = smartphones_data[(smartphones_data.price >= low_border*1000) & (smartphones_data.price <= high_border*1000)]
     if sd:
         sort_by.append('card_value (gb)')
     if len(inbuilt_mem) != 0:
