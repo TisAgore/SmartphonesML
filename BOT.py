@@ -1,6 +1,8 @@
 import telebot
 from telebot import types
 from RegressionML import data_from_telebot
+import pandas as pd
+import numpy as np
 
 token = '6579188711:AAHf34uQGiGLfd-7GsBXKj0r5umufdex2fc'
 MLDockerBot = telebot.TeleBot(token)
