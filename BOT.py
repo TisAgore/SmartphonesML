@@ -1,6 +1,5 @@
 import telebot
 from telebot import types
-from RegressionML import data_from_telebot
 import pandas as pd
 import numpy as np
 
@@ -229,6 +228,7 @@ def characteristics_choice(callback):
         for phone_model in phone_models:
             str_for_message = str_for_message + f'{phone_model.upper()}\n'
             str_for_message = str_for_message + f'https://www.dns-shop.ru/search/?q={phone_model.replace(' ', '+')}&order=opinion\n'
+            str_for_message = str_for_message + f'https://www.citilink.ru/search/?text={phone_model.replace(' ', '+')}&menu_id=214\n'
             str_for_message = str_for_message + f'https://megamarket.ru/catalog/?q={phone_model.replace(' ', '+')}&collectionId=12546\n\n'
         str_for_message = str_for_message + 'Попробовать еще раз?'
         MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
