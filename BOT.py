@@ -6,6 +6,83 @@ token = '6579188711:AAHf34uQGiGLfd-7GsBXKj0r5umufdex2fc'
 MLDockerBot = telebot.TeleBot(token)
 characteristic = []
 
+def data_from_telebot(characteristics):
+    characteristics_for_ml = set(characteristics)
+    cores_num = 0
+    display_freq = []
+    inbuilt_mem = []
+    brands = []
+    borders = []
+    sd = False
+    sort_by = []
+    smartphones_data = pd.read_csv('smartphones_ready_for_ml.csv')
+    smartphones_data = smartphones_data.iloc[:, 1:]
+    smartphones_megamarket = pd.read_csv('clear_smartphones.csv')
+    for characteristic in characteristics_for_ml:
+        characteristic = characteristic.lower()
+        if 'apple' in characteristic:
+            cores_num = 6
+            brands += ['iphone']
+        elif 'hz' in characteristic:
+            display_freq += [int(characteristic[:-2])]
+        elif 'gb' in characteristic:
+            inbuilt_mem += [int(characteristic[:-2])]
+        elif 'sd' in characteristic:
+            sd = True
+        elif characteristic in ('samsung', 'honor', 'huawei', 'xiaomi', 'realme'):
+            brands += [characteristic]
+        elif '-' in characteristic:
+            low_border, high_border = characteristic.split('-')
+            low_border, high_border = int(low_border), int(high_border)
+            borders.extend([low_border, high_border])
+        elif '+' in characteristic:
+            low_border = int(characteristic[:-1])
+            borders.extend([low_border, -1])
+        elif characteristic in ('cpu', 'camera', 'ram', 'battery', 'display'):
+            if characteristic == 'cpu':
+                characteristic = 'processor'
+            elif characteristic == 'camera':
+                characteristic = 'rear camera (max mp)'
+            elif characteristic == 'display':
+                characteristic = 'display size (inch)'
+            sort_by.append(characteristic)
+    if cores_num == 0:
+        cores_num = 8
+    if -1 in borders:
+        borders.remove(-1)
+        high_border = smartphones['price'].max()
+        borders.append(high_border)
+    low_border = min(borders)
+    high_border = max(borders)
+    smartphones_for_search = smartphones_data[(smartphones_data.price >= low_border*1000) & (smartphones_data.price <= high_border*1000)]
+    if sd:
+        sort_by.append('card_value (gb)')
+    if len(inbuilt_mem) != 0:
+        sort_by.append('inbuilt memory')
+        min_gb = min(inbuilt_mem)
+        max_gb = max(inbuilt_mem)
+        smartphones_for_search = smartphones_for_search[(smartphones_for_search['inbuilt memory'] >= min_gb) & (smartphones_for_search['inbuilt memory'] <= max_gb)]
+    if len(display_freq) != 0:
+        sort_by.append('display_freq (hz)')
+        min_hz = min(display_freq)
+        max_hz = max(display_freq)
+        smartphones_for_search = smartphones_for_search[(smartphones_for_search['display frequancy (hz)'] >= min_hz) & (smartphones_for_search['display frequancy (hz)'] <= max_hz)]
+    smartphones_by_brands = pd.DataFrame(columns=smartphones.columns)
+    if len(brands) != 0:
+        for brand_name in brands:
+          if smartphones_by_brands.empty:
+              smartphones_by_brands = smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]
+          else:
+              smartphones_by_brands = pd.concat([smartphones_by_brands, smartphones_for_search[smartphones_for_search.model.str.count(brand_name) > 0]])
+    else:
+        smartphones_by_brands = smartphones_for_search
+    smartphones_for_search = smartphones_by_brands.sort_values(by=sort_by)
+    models_in_megamarket = np.array(smartphones_megamarket['model'])
+    for model in np.array(smartphones_for_search['model']):
+        if model not in models_in_megamarket:
+            smartphones_for_search = smartphones_for_search.drop(smartphones_for_search[smartphones_for_search.model.isin([model])].index)
+    print(smartphones_for_search)
+    return np.array(smartphones_for_search.iloc[:3, 1])
 
 def say_hello(message):
     markup = types.InlineKeyboardMarkup()
