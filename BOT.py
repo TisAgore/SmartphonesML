@@ -1,5 +1,6 @@
 import telebot
 from telebot import types
+from RegressionML import data_from_telebot
 
 token = '6579188711:AAHf34uQGiGLfd-7GsBXKj0r5umufdex2fc'
 MLDockerBot = telebot.TeleBot(token)
@@ -95,7 +96,7 @@ def buttons(characteristic) -> types.InlineKeyboardMarkup:
     func=lambda callback: callback.data in ('price', 'specifications', 'result',
                                             '0-10', '10-20', '20-30', '30-40', '40-50', '50+',
                                             'CPU', 'Camera', 'RAM', 'Battery', 'Display', 'Brand', 'Memory',
-                                            '60gz', '90gz', '120gz', '144gz'
+                                            '60hz', '90hz', '120hz', '144hz'
                                             'Apple', 'Samsung', 'Honor', 'Huawei', 'Xiaomi', 'Realme',
                                             '64gb', '128gb', '256gb', '512gb', '1024gb', 'SD'
                                             )
@@ -137,18 +138,24 @@ def characteristics_choice(callback):
         characteristic.append(callback.data)
     elif callback.data in ('CPU', 'Camera', 'RAM', 'Battery'):
         characteristic.append(callback.data)
-    elif callback.data in ('60gz', '90gz', '120gz', '144gz'):
+    elif callback.data in ('60hz', '90hz', '120hz', '144hz'):
         characteristic.append(callback.data)
     elif callback.data in ('Apple', 'Samsung', 'Honor', 'Huawei', 'Xiaomi', 'Realme'):
         characteristic.append(callback.data)
     elif callback.data in ('64gb', '128gb', '256gb', '512gb', '1024gb', 'SD'):
         characteristic.append(callback.data)
     elif callback.data == 'result':
+        phone_models = data_from_telebot(characteristic)
+        str_for_message = 'Вот ваш результат:\n'
+        for phone_model in phone_models:
+            str_for_message = str_for_message + f'{phone_model.upper()}\n'
+            str_for_message = str_for_message + f'https://www.dns-shop.ru/search/?q={phone_model.replace(' ', '+')}&order=opinion\n'
+            str_for_message = str_for_message + f'https://megamarket.ru/catalog/?q={phone_model.replace(' ', '+')}&collectionId=12546\n\n'
+        str_for_message = str_for_message + 'Попробовать еще раз?'
         MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
         MLDockerBot.send_message(callback.message.chat.id,
-                                 f'Вот ваш результат: {characteristic}\n'
-                                 'Попробовать еще раз?',
-                                 reply_markup=buttons('restart'))
+                                str_for_message,
+                                reply_markup=buttons('restart'))
 
 
 if __name__ == '__main__':
