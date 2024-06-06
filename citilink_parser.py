@@ -50,7 +50,8 @@ def get_items(html: str, items: dict, model_name: str, prices: list[int]):
             continue
         price = int(price.get_text())
         prices.append(price)
-        items[price] = url
+        if price not in items:
+            items[price] = url
     
 
 def main(model_name: str):
