@@ -126,7 +126,6 @@ def buttons(characteristic) -> types.InlineKeyboardMarkup:
 def characteristics_choice(callback):
     if callback.data == 'price':
         characteristic.clear()
-        MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
         MLDockerBot.send_message(callback.message.chat.id,
                                  'Давайте начнем с диапазона цен!\n'
                                  'Каким бюджетом для покупки телефона вы обладаете?\n'
