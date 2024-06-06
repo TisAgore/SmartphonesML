@@ -36,8 +36,8 @@ def get_html(url: str, model_name: str):
 def get_items(html: str, items: dict, model_name: str, prices: list[int]):
     soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
     items: list[BeautifulSoup] = soup.find_all('div', class_ = 'app-catalog-1bogmvw')
-    skip_item = False
     for item in items:
+        kip_item = False
         name = item.find('div', class_ = 'app-catalog-oacxam').get_text().lower()
         url = CITILINK_URL + item.find('a', class_ = 'app-catalog-1k0cnlg').get("href")
         price = item.find('span', class_ = 'app-catalog-0')
