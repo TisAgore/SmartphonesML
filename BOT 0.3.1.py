@@ -22,12 +22,12 @@ def hello(message):
 def buttons(characteristic) -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
     if characteristic == 'price':
-        price_1 = types.InlineKeyboardButton('До 10 тысяч', callback_data='10000')
-        price_2 = types.InlineKeyboardButton('10-20 тысяч', callback_data='20000')
-        price_3 = types.InlineKeyboardButton('20-30 тысяч', callback_data='30000')
-        price_4 = types.InlineKeyboardButton('30-40 тысяч', callback_data='40000')
-        price_5 = types.InlineKeyboardButton('40-50 тысяч', callback_data='50000')
-        price_6 = types.InlineKeyboardButton('Больше 50 тысяч', callback_data='999999')
+        price_1 = types.InlineKeyboardButton('До 10 тысяч', callback_data='5000')
+        price_2 = types.InlineKeyboardButton('10-20 тысяч', callback_data='15000')
+        price_3 = types.InlineKeyboardButton('20-30 тысяч', callback_data='25000')
+        price_4 = types.InlineKeyboardButton('30-40 тысяч', callback_data='35000')
+        price_5 = types.InlineKeyboardButton('40-50 тысяч', callback_data='45000')
+        price_6 = types.InlineKeyboardButton('Больше 50 тысяч', callback_data='120000')
         next_but = types.InlineKeyboardButton('Далее ▶️', callback_data='specifications')
         return_but = types.InlineKeyboardButton('Заново 🔄', callback_data='price')
         markup.row(price_1, price_2, price_3)
@@ -49,10 +49,10 @@ def buttons(characteristic) -> types.InlineKeyboardMarkup:
         markup.row(next_but, clear_button)
         return markup
     elif characteristic == 'Display':
-        Display60 = types.InlineKeyboardButton('60 Гц', callback_data='60gz')
-        Display90 = types.InlineKeyboardButton('90 Гц', callback_data='90gz')
-        Display120 = types.InlineKeyboardButton('120 Гц', callback_data='120gz')
-        Display144 = types.InlineKeyboardButton('144 Гц', callback_data='144gz')
+        Display60 = types.InlineKeyboardButton('60 Гц', callback_data='60hz')
+        Display90 = types.InlineKeyboardButton('90 Гц', callback_data='90hz')
+        Display120 = types.InlineKeyboardButton('120 Гц', callback_data='120hz')
+        Display144 = types.InlineKeyboardButton('144 Гц', callback_data='144hz')
         return_but = types.InlineKeyboardButton('Назад ◀️', callback_data='specifications')
         clear_button = types.InlineKeyboardButton('Заново 🔄', callback_data='price')
         markup.row(Display60, Display90, Display120, Display144)
@@ -86,10 +86,10 @@ def buttons(characteristic) -> types.InlineKeyboardMarkup:
         markup.row(return_but, clear_button)
         return markup
     elif characteristic == 'Battery':
-        Battery3000 = types.InlineKeyboardButton('3000 mAh', callback_data='3000mah')
-        Battery4000 = types.InlineKeyboardButton('4000 mAh', callback_data='4000mah')
-        Battery5000 = types.InlineKeyboardButton('5000 mAh', callback_data='5000mah')
-        Battery6000 = types.InlineKeyboardButton('6000 mAh', callback_data='6000mah')
+        Battery3000 = types.InlineKeyboardButton('3000 mAh', callback_data='3000mAh')
+        Battery4000 = types.InlineKeyboardButton('4000 mAh', callback_data='4000mAh')
+        Battery5000 = types.InlineKeyboardButton('5000 mAh', callback_data='5000mAh')
+        Battery6000 = types.InlineKeyboardButton('6000 mAh', callback_data='6000mAh')
         return_but = types.InlineKeyboardButton('Назад ◀️', callback_data='specifications')
         clear_button = types.InlineKeyboardButton('Заново 🔄', callback_data='price')
         markup.row(Battery3000, Battery4000, Battery5000, Battery6000)
@@ -114,12 +114,12 @@ def buttons(characteristic) -> types.InlineKeyboardMarkup:
 
 @MLDockerBot.callback_query_handler(
     func=lambda callback: callback.data in ('price', 'specifications', 'result',
-                                            '10000', '20000', '30000', '40000', '50000', '999999',
+                                            '5000', '15000', '25000', '35000', '45000', '120000',
                                             'CPU', 'Camera', 'RAM', 'Battery', 'Display', 'Brand', 'Memory',
-                                            '60gz', '90gz', '120gz', '144gz',
+                                            '60hz', '90hz', '120hz', '144hz',
                                             'Apple', 'Samsung', 'Honor', 'Huawei', 'Xiaomi', 'Realme',
                                             '64gb', '128gb', '256gb', '512gb', '1024gb',  # 'SD'
-                                            '16Mp', '40Mp', '50Mp', '60Mp', '100Mp',
+                                            '16Mp', '40Mp', '50Mp', '64Mp', '100Mp',
                                             '3000mAh', '4000mAh', '5000mAh', '6000mAh'
                                             )
 )
@@ -170,12 +170,12 @@ def characteristics_choice(callback):
                                  reply_markup=buttons('Camera'))
     elif callback.data in ('CPU', 'RAM'):
         characteristic[callback.data] = True
-    elif callback.data in ('10000', '20000', '30000', '40000', '50000', '999999'):
+    elif callback.data in ('5000', '15000', '25000', '35000', '45000', '120000'):
         if 'Price' not in characteristic.keys():
             characteristic['Price'] = [int(callback.data[:])]
         else:
             characteristic['Price'].append(int(callback.data))
-    elif callback.data in ('60gz', '90gz', '120gz', '144gz'):
+    elif callback.data in ('60hz', '90hz', '120hz', '144hz'):
         if 'Display' not in characteristic.keys():
             characteristic['Display'] = [int(callback.data[:-2])]
         else:
@@ -190,7 +190,7 @@ def characteristics_choice(callback):
             characteristic['Memory'] = [int(callback.data[:-2])]
         else:
             characteristic['Memory'].append(int(callback.data[:-2]))
-    elif callback.data in ('16Mp', '40Mp', '50Mp', '60Mp', '100Mp'):
+    elif callback.data in ('16Mp', '40Mp', '50Mp', '64Mp', '100Mp'):
         if 'Camera' not in characteristic.keys():
             characteristic['Camera'] = [int(callback.data[:-2])]
         else:
