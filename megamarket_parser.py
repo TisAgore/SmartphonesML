@@ -36,8 +36,8 @@ def get_items(html: str, items: dict, model_name: str, prices: list[int]):
     items_divs: list[BeautifulSoup] = soup.find_all('div', class_ = 'catalog-item-regular-desktop')
     if len(items_divs) == 0:
         return False
-    stop_running = False
     for item in items_divs:
+        stop_running = False
         link = BASEURL + item.find('a', class_='ddl_product_link').get('href')
         item_price = item.find('div', class_='catalog-item-regular-desktop__price').get_text()
         chars_to_remove = ['\n', '\t', ' ', '₽', '\xa0']
