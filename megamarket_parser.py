@@ -51,7 +51,8 @@ def get_items(html: str, items: dict, model_name: str, prices: list[int]):
                 break
         if stop_running:
             continue
-        items[int(item_price)] = link
+        if price not in items:
+            items[int(item_price)] = link
         prices.append(int(item_price))
 
 
