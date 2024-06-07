@@ -56,7 +56,7 @@ def get_items(html: str, items: dict, model_name: str, prices: list[int]):
         prices.append(int(item_price))
 
 
-def main(model_name: str):
+def megamarket_main(model_name: str):
     model_name_url = f"{BASEURL}/catalog/?q={model_name}&collectionId=12546"
     filter = {
         "4CB2C27EAAFC4EB39378C4B7487E6C9E": ["1"]} # фильтр по наличию товара
