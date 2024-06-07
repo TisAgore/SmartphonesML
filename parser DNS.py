@@ -37,7 +37,7 @@ def parse_characteristics_page(driver, url, model_name):
     return notebook, prices
 
 
-def main(model_name: str):
+def dns_main(model_name: str):
 
     driver = uc.Chrome()
     url_to_parse = f'https://www.dns-shop.ru/search/?q={model_name.replace(' ', '+')}&category=17a8a01d16404e77'
