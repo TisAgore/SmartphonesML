@@ -1,10 +1,13 @@
 import telebot
 from telebot import types
+from ML import MachineLearningFilter
+from parser_DNS import dns_main
+from citilink_parser import citilink_main
+from megamarket_parser import megamarket_main
 
 token = '6579188711:AAHf34uQGiGLfd-7GsBXKj0r5umufdex2fc'
 MLDockerBot = telebot.TeleBot(token)
 characteristic = {}
-
 
 def say_hello(message):
     markup = types.InlineKeyboardMarkup()
@@ -208,6 +211,7 @@ def characteristics_choice(callback):
                 characteristic[characteristics] = []
         for i in ['Brand', 'Display', 'CPU', 'RAM']:  # КОСТЫЛЬ
             del characteristic[i]
+        MachineLearningFilter.find_smartphone(characteristic)
         MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
         MLDockerBot.send_message(callback.message.chat.id,
                                  f'Вот ваш результат: {characteristic}\n'
