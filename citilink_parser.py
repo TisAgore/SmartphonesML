@@ -54,7 +54,7 @@ def get_items(html: str, items: dict, model_name: str, prices: list[int]):
             items[price] = url
     
 
-def main(model_name: str):
+def citilink_main(model_name: str):
     citilink_smartphone_url = CITILINK_URL + f"/search/?text={model_name.replace(' ', '+')}&menu_id=214"
 
     items, prices = get_html(citilink_smartphone_url, model_name)
