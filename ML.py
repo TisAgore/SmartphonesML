@@ -1,55 +1,35 @@
 class MachineLearningFilter:
-    import pandas as __pd
-    import pickle as __pickle
+    import pandas as pd
 
-    __data = __pd.read_csv('Data_with_CLASSES.csv')
-    del __data['Unnamed: 0']
-
-    with open('ML_MODELS.pickle', 'rb') as __f:
-        __MODELS = __pickle.load(__f)
+    __data = pd.read_csv('Final dataset.csv', index_col='Unnamed: 0')
+    __data = __data.reset_index(drop=True)
+    __data.columns = ['rating', 'Price', 'Memory', 'Battery', 'Camera', 'smartphone']
 
     @staticmethod
-    def __choice(feature: dict) -> dict:
-        order = []
-        to_return = dict()
-        tmp = []
-        for idx in ['Price', 'Memory', 'Battery', 'Camera']:
-            if len(feature[idx]) != 0:
-                tmp.append(sum(feature[idx]) / len(feature[idx]))
-                order.append(idx.lower())
-            else:
-                tmp.append(0)
-                order.append(None)
+    def find_smartphone(features):
+        import statistics
+        from sklearn.cluster import KMeans
 
-        std_feature = MachineLearningFilter.__MODELS['scaler'].transform([tmp])
+        keys = []
+        mask = []
 
-        for i in range(len(order)):
-            model = std_feature[0][i]
-            if order[i] is not None:
-                model = MachineLearningFilter.__MODELS[order[i]].predict([[model]])
-                to_return[order[i] + '_class'] = model[0]
+        for key in features.keys():
+            if features[key]:
+                mask.append(features[key])
+                keys.append(key)
 
-        return to_return
+        tmp_data = MachineLearningFilter.__data.copy()
+        tmp_data = tmp_data[keys]
+        ml = KMeans(n_clusters=40).fit(tmp_data.to_numpy())
+        tmp_data['ml'] = ml.predict(tmp_data.to_numpy())
+        s = []
+        for i in keys:
+            s.append(statistics.mean(features[i]))
 
-    @staticmethod
-    def find_smartphone(features: dict):
-        features = MachineLearningFilter.__choice(features)
-        # order = ['price_class', 'memory_class', 'battery_class', 'camera_class']
-        new_data = MachineLearningFilter.__data
-        for column in features.keys():
-            new_data = new_data[new_data[column] == features[column]]
+        to_return = ml.predict([s])
+        tmp_data = tmp_data[tmp_data['ml'] == to_return.tolist()[0]]
 
-        new_data = new_data.sort_values(by=['rating'], ascending=False)
-        new_data = new_data['smartphones'].head(3).to_list()
-        return new_data
+        data = MachineLearningFilter.__data
+        data = data.iloc[tmp_data.index]
 
-# test_feature = {
-#     'Price': [45000],
-#     'Camera': [50],
-#     'Battery': [5000],
-#     'Memory': [128]
-# }
-
-
-# s = MachineLearningFilter.find_smartphone(test_feature)
-# print(s)
+        return data['smartphone'].tolist()
