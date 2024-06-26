@@ -209,7 +209,7 @@ def characteristics_choice(callback):
         for characteristics in ('Price', 'Camera', 'Battery', 'Memory', 'Brand', 'Display'):
             if characteristics not in characteristic.keys():
                 characteristic[characteristics] = []
-        for i in ['Brand', 'Display', 'CPU', 'RAM']:  # КОСТЫЛЬ
+        for i in ['Display', 'CPU', 'RAM']:  # КОСТЫЛЬ
             del characteristic[i]
         MachineLearningFilter.find_smartphone(characteristic)
         MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
