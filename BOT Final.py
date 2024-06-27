@@ -1,7 +1,8 @@
 import telebot
 from telebot import types
-from ML import MachineLearningFilter
-from parser_DNS import dns_main
+import pandas as pd
+from MLmodel import MachineLearningFilter
+from dns_parser import dns_main
 from citilink_parser import citilink_main
 from megamarket_parser import megamarket_main
 
@@ -211,12 +212,49 @@ def characteristics_choice(callback):
                 characteristic[characteristics] = []
         for i in ['Display', 'CPU', 'RAM']:  # КОСТЫЛЬ
             del characteristic[i]
-        MachineLearningFilter.find_smartphone(characteristic)
-        MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
-        MLDockerBot.send_message(callback.message.chat.id,
-                                 f'Вот ваш результат: {characteristic}\n'
-                                 'Попробовать еще раз?',
-                                 reply_markup=buttons('restart'))
+        smartphones_top = MachineLearningFilter.find_smartphone(characteristic)
+        if len(smartphones_top) != 0:
+            links = list()
+            prices = list()
+            for smartphone in smartphones_top:
+                smartphone = smartphone.lower()
+                smartphone = smartphone.replace(' + ', ' ')
+                smartphone = smartphone.replace('(', '')
+                smartphone = smartphone.replace(')', '')
+                smartphone = smartphone.replace('gb', '')
+                smartphone = smartphone.replace('ram', '')
+                smartphone = smartphone.replace('5g', '')
+                dict_ = {}
+                link1, price1 = megamarket_main(smartphone)
+                dict_[price1] = link1
+                link2, price2 = citilink_main(smartphone)
+                dict_[price2] = link2
+                # link3, price3 = dns_main(smartphone)
+                # dict_[price3] = link3
+                if min(price1, price2) == 99999999999:
+                    continue
+                prices.append(min(price1, price2))
+                links.append(dict_[min(price1, price2)])
+                if len(prices) == 3:
+                    break
+            res_text = 'Вот ваш результат:\n\n'
+            for i in range(len(links)):
+                res_text += f'{i+1}. Цена: {prices[i]}Р. \nСсылка: {links[i]}\n\n'
+            res_text += 'Попробовать ещё раз?'
+            MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
+            MLDockerBot.send_message(callback.message.chat.id,
+                                    res_text,
+                                    reply_markup=buttons('restart'))
+        else:
+            dataset = pd.read_csv('CLEAR_DATASET.csv')
+            dataset = dataset[(dataset.price <= characteristic['Price'][0] + 6000) & (dataset.price >= characteristic['Price'][0] - 6000)]
+            dataset = dataset.sort_values(by=['rating', 'price'], ascending=False)
+            smartphones_names = dataset['smartphone'].head(3).to_list()
+            MLDockerBot.delete_message(callback.message.chat.id, callback.message.message_id)
+            MLDockerBot.send_message(callback.message.chat.id,
+                                    f'Подходящий смартфон {smartphones_names}\n'
+                                    'Измените фильтры, сбалансируйте и попробуйте еще раз',
+                                    reply_markup=buttons('restart'))
 
 
 if __name__ == '__main__':
