@@ -7,11 +7,11 @@ class MachineLearningFilter:
 
     @staticmethod
     def find_smartphone(features):
+        import pandas as pd
         import statistics
         from sklearn.cluster import KMeans
 
         tmp_data = MachineLearningFilter.__data.copy()
-        order = ['Price', 'Battery', 'Camera', 'Memory', 'Brand']
         keys = []
         mask = []
 
@@ -27,7 +27,6 @@ class MachineLearningFilter:
                     tmp_data = tmp_data[tmp_data['smartphone'].str.startswith(brands)]
 
         tmp_data = tmp_data[keys]
-
 
         if len(tmp_data) < 5:
             return MachineLearningFilter.__data['smartphone'].tolist()
@@ -48,7 +47,10 @@ class MachineLearningFilter:
         to_return = ml.predict([predict_data])
         tmp_data = tmp_data[tmp_data['ml'] == to_return.tolist()[0]]
 
-        data = MachineLearningFilter.__data
+        data: pd.DataFrame = MachineLearningFilter.__data
         data = data.iloc[tmp_data.index]
 
-        return data['smartphone'].tolist()[:3]
+        data = data.sort_values(by=['Camera', 'Memory', 'rating'], ascending=False).sort_values(by='Price')
+        data = data[['Price', 'smartphone']].head(3)
+
+        return data.to_numpy().tolist()
