@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  bot:
+    build: ./tgbot
+    networks:
+      - frontend
+      - backend
+    command: python ./MLTGbot.py
+    
+  model:
+    build: ./model
+    depends_on:
+      - bot
+    networks:
+      - backend
+
+  parser:
+    build: ./parser
+    depends_on:
+      - bot
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
